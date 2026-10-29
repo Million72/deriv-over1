@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deriv Over 1 Bot</title>
+  <meta name="theme-color" content="#080d18">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Over 1">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+:root {
+  --bg: #080d18;
+  --panel: #111a2b;
+  --panel-light: #18243a;
+  --border: #26344b;
+  --text: #f2f5fb;
+  --muted: #91a0b8;
+  --green: #20d99a;
+  --red: #ff5573;
+  --blue: #538bff;
+  --yellow: #ffc857;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.app {
+  width: 100%;
+  max-width: 1100px;
+  margin: auto;
+  padding: 22px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.topbar h1 span {
+  color: var(--green);
+}
+
+.topbar p,
+.muted,
+.small {
+  color: var(--muted);
+}
+
+.topbar p {
+  margin: 5px 0 0;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.status-dot,
+.pulse {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+}
+
+.status.connected .status-dot {
+  background: var(--green);
+  box-shadow: 0 0 10px #20d99a77;
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 28px 0 20px;
+}
+
+.hero h2 {
+  margin: 4px 0;
+  font-size: clamp(22px, 4vw, 30px);
+}
+
+.hero p {
+  margin-bottom: 0;
+}
+
+.eyebrow {
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.pulse {
+  background: var(--green);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 #20d99a66; }
+  50% { box-shadow: 0 0 0 7px #20d99a00; }
+}
+
+.message {
+  padding: 12px 14px;
+  margin: 0 0 18px;
+  background: #18243a;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: #d6e2f7;
+  overflow-wrap: anywhere;
+}
+
+.message.success {
+  border-color: #20d99a66;
+  color: var(--green);
+}
+
+.message.error {
+  border-color: #ff557366;
+  color: var(--red);
+}
+
+.panel {
+  padding: 20px;
+  margin-bottom: 18px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.section-heading h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.section-heading .small {
+  font-size: 11px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #d8e0ee;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+input,
+select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 11px 12px;
+  color: var(--text);
+  background: #0b1220;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px #538bff22;
+}
+
+input::placeholder {
+  color: #64748b;
+}
+
+.balance-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 16px;
+  background: var(--panel-light);
+  border-radius: 10px;
+}
+
+.balance-box span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.balance-box strong {
+  font-size: 23px;
+  color: var(--green);
+}
+
+.balance-box #currency {
+  margin-left: auto;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.stat-card {
+  min-width: 0;
+  padding: 17px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+}
+
+.stat-card span,
+.stat-card small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.stat-card strong {
+  display: block;
+  margin: 8px 0;
+  font-size: clamp(20px, 3vw, 27px);
+  overflow-wrap: anywhere;
+}
+
+.stat-card small {
+  line-height: 1.5;
+}
+
+#profitLoss.positive {
+  color: var(--green);
+}
+
+#profitLoss.negative {
+  color: var(--red);
+}
+
+.checkbox-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  font-size: 12px;
+}
+
+.checkbox-row input {
+  width: 17px;
+  min-height: 17px;
+  height: 17px;
+  accent-color: var(--green);
+}
+
+.sequence-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--panel-light);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.sequence-box h4 {
+  margin: 0 0 4px;
+}
+
+.sequence-box p {
+  margin: 0;
+  font-size: 12px;
+}
+
+.sequence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.sequence b {
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+
+.even {
+  color: var(--green);
+  background: #20d99a18;
+  border: 1px solid #20d99a55;
+}
+
+.odd {
+  color: #ff9aaf;
+  background: #ff557318;
+  border: 1px solid #ff557355;
+}
+
+.sequence b.active {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0 14px;
+}
+
+.btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 43px;
+  padding: 11px 17px;
+  color: var(--text);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn.primary {
+  color: #06140f;
+  background: var(--green);
+}
+
+.btn.secondary {
+  background: #202e45;
+  border-color: #34445e;
+}
+
+.btn.warning {
+  color: #fff;
+  background: #b8324d;
+}
+
+.small-btn {
+  min-height: 34px;
+  padding: 7px 10px;
+  font-size: 11px;
+}
+
+.small {
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.tick-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  min-height: 45px;
+}
+
+.tick-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  min-height: 53px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #0b1220;
+}
+
+.tick-item strong {
+  font-size: 18px;
+}
+
+.tick-item small {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.tick-item.even-tick strong {
+  color: var(--green);
+}
+
+.tick-item.odd-tick strong {
+  color: #ff8197;
+}
+
+.empty-state {
+  padding: 14px 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  white-space: nowrap;
+}
+
+th,
+td {
+  padding: 13px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+td {
+  color: #e0e8f5;
+}
+
+td.win {
+  color: var(--green);
+}
+
+td.loss {
+  color: var(--red);
+}
+
+footer {
+  padding: 12px 0 25px;
+  color: var(--muted);
+  text-align: center;
+}
+
+footer p {
+  margin: 5px 0;
+}
+
+@media (max-width: 650px) {
+  .app {
+    padding: 14px;
+  }
+
+  .topbar {
+    align-items: flex-start;
+  }
+
+  .topbar h1 {
+    font-size: 18px;
+  }
+
+  .status {
+    padding: 7px 9px;
+    font-size: 10px;
+  }
+
+  .hero {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-top: 22px;
+  }
+
+  .panel {
+    padding: 15px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .stat-card {
+    padding: 13px;
+  }
+
+  .balance-box {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .balance-box #currency {
+    margin-left: 0;
+  }
+
+  .button-row {
+    flex-direction: column;
+  }
+
+  .button-row .btn {
+    width: 100%;
+  }
+
+  .sequence-box {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+  }
+}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{flex-direction:row;align-items:center;gap:8px;padding:9px 11px;background:#0b1220;border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer}
+.chip input{width:16px;min-height:16px;height:16px;accent-color:var(--green)}
+.scan-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px}
+.scan-row.active span{color:var(--green);font-weight:700}
+.badge{padding:3px 9px;border-radius:12px;font-size:10px;font-weight:800;white-space:nowrap}
+.badge.ok{color:var(--green);background:#20d99a18;border:1px solid #20d99a55}
+.badge.no{color:var(--muted);border:1px solid var(--border)}
+.bars{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}
+.bar{padding:9px 0;text-align:center;border-radius:8px;background:#0b1220;border:1px solid var(--border);font-size:10px;color:var(--muted)}
+.bar strong{display:block;font-size:16px;color:var(--text)}
+.bar.low strong{color:#ff8197}
+.bar.high strong{color:var(--green)}
+.bar.good{border-color:#20d99a99}
+.sub{margin:14px 0 0;font-size:12px;color:var(--muted)}
+.real{color:var(--red)!important;font-weight:700}
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>DERIV <span>OVER 1</span></h1>
+        <p>Multi-market digit scanner</p>
+      </div>
+      <div id="status" class="status disconnected"><span class="status-dot"></span> Disconnected</div>
+    </header>
+
+    <main>
+      <div id="message" class="message">Loading…</div>
+
+      <section class="panel">
+        <div class="section-heading"><h3>Account Connection</h3><span class="small">Deriv API</span></div>
+        <div class="form-grid">
+          <label>API Token<input id="apiToken" type="password" placeholder="Paste your Deriv API token" autocomplete="off"></label>
+          <label>App ID<input id="appId" type="text" inputmode="numeric" placeholder="Your Deriv App ID" autocomplete="off"></label>
+          <label>Account<select id="account"><option value="">Connect to load accounts</option></select></label>
+          <label>&nbsp;<button id="connectBtn" class="btn secondary" type="button">Connect Account</button></label>
+        </div>
+        <div class="balance-box">
+          <span>Account Balance</span><strong id="balance">—</strong><span id="currency">Not connected</span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading"><h3>Markets to Scan</h3><span class="small">Tick the markets you want</span></div>
+        <div id="marketList" class="chips"></div>
+        <label>Analysis ticks per market (100 - 5000)
+          <input id="analysisTicks" type="number" min="100" max="5000" step="100" value="1000">
+        </label>
+        <label style="margin-top:14px">Minimum Over 1 chance to trade (%)
+          <input id="minChance" type="number" min="50" max="99" step="0.5" value="82">
+        </label>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading"><h3>Scanner</h3><span class="small">Highest Over 1 chance</span></div>
+        <div id="scanner"></div>
+        <p id="barsTitle" class="sub">Digit %</p>
+        <div id="bars" class="bars"></div>
+        <p id="reasonLine" class="sub"></p>
+      </section>
+
+      <section class="stats-grid">
+        <div class="stat-card"><span>Last Digit</span><strong id="lastDigit">—</strong><small id="lastDigitType">Waiting for ticks</small></div>
+        <div class="stat-card"><span>Trades</span><strong id="totalTrades">0</strong><small>Contracts bought</small></div>
+        <div class="stat-card"><span>Wins</span><strong id="wins">0</strong><small>Profitable contracts</small></div>
+        <div class="stat-card"><span>Net Profit/Loss</span><strong id="profitLoss">$0.00</strong><small>Session result</small></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading"><h3>Trading Configuration</h3><span class="small">Over 1 · 1 tick</span></div>
+        <div class="form-grid">
+          <label>Initial Stake (USD)<input id="stake" type="number" min="0.35" step="0.01" value="0.35"></label>
+          <label>Martingale Multiplier<input id="multiplier" type="number" min="1" step="0.1" value="2"></label>
+          <label>Maximum Martingale Steps<input id="maxSteps" type="number" min="0" max="10" step="1" value="3"></label>
+          <label>Take Profit (USD)<input id="takeProfit" type="number" min="0.01" step="0.01" value="5.00"></label>
+          <label>Stop Loss (USD)<input id="stopLoss" type="number" min="0.01" step="0.01" value="5.00"></label>
+          <label>Target Wins (0 = no limit)<input id="targetWins" type="number" min="0" step="1" value="0"></label>
+        </div>
+        <label class="checkbox-row"><input id="martingaleEnabled" type="checkbox" checked><span>Enable Martingale after a loss</span></label>
+        <div class="button-row">
+          <button id="startBtn" class="btn primary" type="button" disabled>Start Bot</button>
+          <button id="stopBtn" class="btn warning" type="button" disabled>Stop Bot</button>
+        </div>
+        <p class="small">The bot picks the market with the highest chance of Over 1 (digits 2-9) and buys Over 1 on every tick of it, with no tick skipped, until you stop it or a limit is reached. Martingale can rapidly increase risk. Test on a demo account first.</p>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading"><h3>Trade History</h3><button id="clearHistoryBtn" class="btn small-btn secondary" type="button">Clear History</button></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Time</th><th>Contract</th><th>Stake</th><th>Result</th><th>P/L</th></tr></thead>
+          <tbody id="tradeHistory"></tbody>
+        </table></div>
+      </section>
+    </main>
+
+    <footer><p>Deriv Over 1 Bot · Use at your own risk.</p></footer>
+  </div>
+<script>
+"use strict";
+
+/*
+ * DERIV OVER 1 BOT - multi-market scanner
+ *
+ * Scans the selected markets (last-digit % over the last N ticks), picks the
+ * one with the HIGHEST chance of Over 1 (digits 2-9), then buys Over 1 on
+ * EVERY tick of that market. No tick is skipped. Stops only on your Stop,
+ * take profit, stop loss or win target.
+ * Token stays in memory only. Use a DEMO account first.
+ */
+
+const $ = (id) => document.getElementById(id);
+const REST_BASE = "https://api.derivws.com";
+const WS_PUBLIC = "wss://api.derivws.com/trading/v1/options/ws/public";
+const MARKETS = [
+  ["R_10", "Volatility 10"], ["R_25", "Volatility 25"], ["R_50", "Volatility 50"],
+  ["R_75", "Volatility 75"], ["R_100", "Volatility 100"],
+  ["1HZ10V", "Volatility 10 (1s)"], ["1HZ15V", "Volatility 15 (1s)"],
+  ["1HZ25V", "Volatility 25 (1s)"], ["1HZ30V", "Volatility 30 (1s)"],
+  ["1HZ50V", "Volatility 50 (1s)"], ["1HZ75V", "Volatility 75 (1s)"],
+  ["1HZ90V", "Volatility 90 (1s)"], ["1HZ100V", "Volatility 100 (1s)"]
+];
+const NAME = Object.fromEntries(MARKETS);
+const MIN_SAMPLE = 100;
+
+const state = {
+  pub: null, pubReady: false, tradeSocket: null, tradingReady: false,
+  accounts: [], account: null, token: "", appId: "",
+  selected: MARKETS.map((m) => m[0]), mk: {}, histReq: new Map(),
+  running: false, active: null, phase: "idle",
+  trades: 0, wins: 0, profit: 0, history: [], currency: "USD", balance: null,
+  step: 0, reqSeq: 0, unresolved: [], pendingByReq: new Map(), byContract: new Map(),
+  payoutRatio: 0.2, lastTradedEpoch: 0, startAt: 0, tradeLog: [], stepBase: 0, lastCfg: null, reconnectTimer: null, reconnectCount: 0,
+  connecting: false, wakeLock: null, realArmedUntil: 0
+};
+let pubRetry = 0, pubTimer = null, renderTimer = null;
+
+/* ---------- helpers ---------- */
+/* Screen work is batched: at most one redraw per frame, after the trade is sent. */
+let uiQueued = false;
+let uiMsg = null;
+const uiTasks = new Set();
+function paintMessage(text, type) {
+  const el = $("message");
+  const cls = "message" + (type ? " " + type : "");
+  if (el.textContent !== text) el.textContent = text;
+  if (el.className !== cls) el.className = cls;
+}
+function flushUI() {
+  uiQueued = false;
+  const tasks = [...uiTasks];
+  uiTasks.clear();
+  tasks.forEach((f) => f());
+  if (uiMsg) { const m = uiMsg; uiMsg = null; paintMessage(m.text, m.type); }
+}
+function ui(fn) {
+  uiTasks.add(fn);
+  if (uiQueued) return;
+  uiQueued = true;
+  (typeof requestAnimationFrame === "function" ? requestAnimationFrame : (f) => setTimeout(f, 0))(flushUI);
+}
+function showMessage(text, type = "") {
+  uiMsg = { text, type };
+  ui(() => {});
+}
+function setStatus(on) {
+  state.pubReady = on;
+  const el = $("status");
+  el.className = on ? "status connected" : "status disconnected";
+  el.lastChild.textContent = on ? " Connected" : " Disconnected";
+}
+function refreshButtons() {
+  $("startBtn").disabled = state.running || !state.tradingReady || !state.selected.length;
+  $("stopBtn").disabled = !state.running;
+}
+const fmtCache = {};
+function money(a, c = state.currency) {
+  try {
+    const f = fmtCache[c] || (fmtCache[c] = new Intl.NumberFormat("en-US", { style: "currency", currency: c }));
+    return f.format(a);
+  } catch (_) { return Number(a).toFixed(2) + " " + c; }
+}
+const round2 = (n) => Math.round(n * 100) / 100;
+function minChance() {
+  const v = parseFloat($("minChance").value);
+  return Math.min(99, Math.max(50, Number.isFinite(v) ? v : 82));
+}
+function analysisN() {
+  const n = parseInt($("analysisTicks").value, 10);
+  return Math.max(MIN_SAMPLE, Math.min(5000, Number.isFinite(n) ? n : 1000));
+}
+function digitOf(price, pip) {
+  const q = Number(price);
+  if (!Number.isFinite(q)) return null;
+  const p = Number(pip);
+  const t = Number.isInteger(p) && p >= 0 && p <= 10 ? q.toFixed(p) : String(price);
+  const ds = t.replace(/\D/g, "");
+  return ds.length ? Number(ds[ds.length - 1]) : null;
+}
+function mkOf(sym) {
+  if (!state.mk[sym]) {
+    state.mk[sym] = { digits: [], counts: Array(10).fill(0), hist: false, asked: false, pending: [], last: 0 };
+  }
+  return state.mk[sym];
+}
+function addDigit(m, d) {
+  m.digits.push(d);
+  m.counts[d] += 1;
+  const n = analysisN();
+  while (m.digits.length > n) m.counts[m.digits.shift()] -= 1;
+}
+
+/* ---------- scoring: chance of Over 1 (digits 2-9) ---------- */
+function evaluate(sym) {
+  const m = state.mk[sym];
+  const total = m ? m.digits.length : 0;
+  if (!m || !m.hist || total < MIN_SAMPLE) {
+    return { ok: false, total, win: 0, pct: null, reason: `Collecting ticks (${total}/${analysisN()})` };
+  }
+  const pct = m.counts.map((c) => (c / total) * 100);
+  const win = pct[2] + pct[3] + pct[4] + pct[5] + pct[6] + pct[7] + pct[8] + pct[9];
+  return { ok: true, total, win, pct, reason: `Over 1 chance: ${win.toFixed(1)}% (digits 2-9)` };
+}
+
+function chooseMarket() {
+  let best = null;
+  let bestWin = -1;
+  state.selected.forEach((sym) => {
+    const e = evaluate(sym);
+    if (e.ok && e.win > bestWin) { best = sym; bestWin = e.win; }
+  });
+  const min = minChance();
+  if (best && bestWin >= min) {
+    state.active = best;
+    state.lastTickAt = Date.now();
+    state.phase = "trading";
+    subscribeOnly(best);
+    showMessage(`Best market: ${NAME[best]} (Over 1 chance ${bestWin.toFixed(1)}%). Trading every tick.`, "success");
+  } else {
+    state.active = null;
+    state.phase = "scan";
+    showMessage(best
+      ? `Best is ${NAME[best]} at ${bestWin.toFixed(1)}%. Waiting for a market at ${min}% or more…`
+      : `Scanning ${state.selected.length} market(s)… collecting ticks.`);
+  }
+  scheduleRender();
+}
+
+/* ---------- rendering ---------- */
+function scheduleRender() {
+  if (renderTimer) return;
+  renderTimer = setTimeout(() => { renderTimer = null; renderScanner(); }, state.running ? 1500 : 400);
+}
+function renderScanner() {
+  const box = $("scanner");
+  box.replaceChildren();
+  let showSym = state.active;
+  let showEval = null;
+  (state.running && state.active ? [state.active] : state.selected).forEach((s) => {
+    const e = evaluate(s);
+    if (!showSym && e.pct && (!showEval || e.win > showEval.win)) { showSym = s; showEval = e; }
+    const row = document.createElement("div");
+    row.className = "scan-row" + (s === state.active ? " active" : "");
+    const name = document.createElement("span");
+    name.textContent = NAME[s] + (e.pct ? ` · Over 1 ${e.win.toFixed(1)}%` : "");
+    const badge = document.createElement("b");
+    badge.className = "badge " + (s === state.active ? "ok" : "no");
+    badge.textContent = s === state.active ? "ACTIVE" : e.ok ? (e.win >= minChance() ? "READY" : "LOW") : "…";
+    row.append(name, badge);
+    row.title = e.reason;
+    box.appendChild(row);
+  });
+  if (!state.selected.length) box.textContent = "Select at least one market.";
+
+  const ev = showSym ? evaluate(showSym) : null;
+  $("barsTitle").textContent = showSym ? `Digit % · ${NAME[showSym]}` : "Digit %";
+  $("reasonLine").textContent = ev ? ev.reason : "";
+  const bars = $("bars");
+  bars.replaceChildren();
+  for (let d = 0; d < 10; d++) {
+    const cell = document.createElement("div");
+    const p = ev && ev.pct ? ev.pct[d] : null;
+    cell.className = "bar " + (d >= 2 ? "high" : "low") + (p !== null && d >= 2 && p > 10 ? " good" : "");
+    const num = document.createElement("strong");
+    num.textContent = String(d);
+    const pc = document.createElement("span");
+    pc.textContent = p === null ? "–" : p.toFixed(1) + "%";
+    cell.append(num, pc);
+    bars.appendChild(cell);
+  }
+}
+function tentative() {
+  let pnl = 0, wins = 0, credit = 0;
+  const add = (t) => {
+    if (!t.settled && Number.isFinite(t.est)) {
+      pnl += t.est;
+      if (t.est > 0) { wins += 1; credit += t.stake + t.est; }
+    }
+  };
+  state.pendingByReq.forEach(add);
+  state.byContract.forEach(add);
+  return { pnl, wins, credit };
+}
+
+/* Balance as it is right now: server balance, minus buys not yet confirmed,
+   plus the payout of trades already won on the tick. */
+function displayBalance() {
+  if (state.balance === null) return null;
+  let unconfirmed = 0;
+  state.pendingByReq.forEach((t) => { unconfirmed += t.stake; });
+  return round2(state.balance - unconfirmed + tentative().credit);
+}
+const updateStats = () => ui(drawStats);
+function drawStats() {
+  const t = tentative();
+  const profit = round2(state.profit + t.pnl);
+  $("totalTrades").textContent = String(state.trades);
+  $("wins").textContent = String(state.wins + t.wins);
+  const el = $("profitLoss");
+  el.textContent = money(profit);
+  el.classList.toggle("positive", profit > 0);
+  el.classList.toggle("negative", profit < 0);
+}
+const updateBalance = () => ui(drawBalance);
+function drawBalance() {
+  const b = displayBalance();
+  $("balance").textContent = b === null ? "—" : money(b);
+  $("currency").classList.toggle("real", !!(state.account && state.account.account_type === "real"));
+  $("currency").textContent = state.account
+    ? `${state.account.account_type.toUpperCase()} · ${state.account.account_id} · ${state.currency}`
+    : "Not connected";
+}
+function addHistoryRow(t) {
+  const body = $("tradeHistory");
+  if (state.history.length === 1) body.replaceChildren();
+  const r = document.createElement("tr");
+  [t.time, `OVER 1 · ${t.symbol}`, money(t.stake), t.result, money(t.pnl)].forEach((v, i) => {
+    const c = document.createElement("td");
+    c.textContent = v;
+    if (i >= 3) c.className = t.pnl >= 0 ? "win" : "loss";
+    r.appendChild(c);
+  });
+  body.insertBefore(r, body.firstChild);
+  while (body.children.length > 40) body.removeChild(body.lastChild);
+}
+function renderHistory() {
+  const body = $("tradeHistory");
+  body.replaceChildren();
+  if (!state.history.length) {
+    const r = document.createElement("tr");
+    const c = document.createElement("td");
+    c.colSpan = 5; c.className = "empty-state"; c.textContent = "No trades yet.";
+    r.appendChild(c); body.appendChild(r);
+    return;
+  }
+  state.history.slice(-40).reverse().forEach((t) => {
+    const r = document.createElement("tr");
+    [t.time, `OVER 1 · ${t.symbol}`, money(t.stake), t.result, money(t.pnl)].forEach((v, i) => {
+      const c = document.createElement("td");
+      c.textContent = v;
+      if (i >= 3) c.className = t.pnl >= 0 ? "win" : "loss";
+      r.appendChild(c);
+    });
+    body.appendChild(r);
+  });
+}
+
+/* ---------- bot control ---------- */
+function readConfig() {
+  const c = {
+    stake: Number($("stake").value), takeProfit: Number($("takeProfit").value),
+    stopLoss: Number($("stopLoss").value), multiplier: Number($("multiplier").value),
+    maxSteps: Number($("maxSteps").value), targetWins: Number($("targetWins").value || 0),
+    martingale: $("martingaleEnabled").checked
+  };
+  const ok = c.stake >= 0.35 && c.takeProfit > 0 && c.stopLoss > 0 && c.multiplier >= 1 &&
+    Number.isInteger(c.maxSteps) && c.maxSteps >= 0 && Number.isInteger(c.targetWins) && c.targetWins >= 0;
+  return ok ? c : null;
+}
+function getConfig() {
+  const c = readConfig();
+  if (c) state.lastCfg = c;
+  return state.lastCfg;
+}
+async function requestWakeLock() {
+  try {
+    if ("wakeLock" in navigator && !state.wakeLock) {
+      state.wakeLock = await navigator.wakeLock.request("screen");
+      state.wakeLock.addEventListener("release", () => { state.wakeLock = null; });
+    }
+  } catch (_) { /* unavailable */ }
+}
+function stopBot(msg = "Bot stopped.", type = "") {
+  try { if (state.wakeLock) state.wakeLock.release(); } catch (_) { /* ignore */ }
+  state.wakeLock = null;
+  const traded = state.active;
+  state.running = false;
+  state.active = null;
+  state.phase = "idle";
+  state.unresolved = [];
+  // Other markets missed ticks while the bot was running: reload their history.
+  Object.keys(state.mk).forEach((sym) => {
+    if (sym === traded) return;
+    const m = state.mk[sym];
+    m.refreshing = true; m.asked = false; m.pending = [];
+  });
+  syncMarkets();
+  refreshButtons();
+  scheduleRender();
+  showMessage(msg, type);
+}
+function startBot() {
+  if (!state.tradingReady || !state.account) { showMessage("Press Connect Account first.", "error"); return; }
+  if (!state.selected.length) { showMessage("Select at least one market.", "error"); return; }
+  const cfg = readConfig();
+  if (!cfg) { showMessage("Check your settings. Minimum stake is 0.35.", "error"); return; }
+  Object.assign(state, { step: 0, trades: 0, wins: 0, profit: 0, unresolved: [], lastCfg: cfg, running: true, lastTradedEpoch: 0, startAt: Date.now(), tradeLog: [], stepBase: 0 });
+  state.pendingByReq.clear();
+  state.byContract.clear();   // results of an earlier run must not leak into this one
+  requestWakeLock();
+  updateStats();
+  refreshButtons();
+  chooseMarket();
+  // Trade at once: don't wait for the next tick to place the first buy.
+  if (state.active) {
+    const m = state.mk[state.active];
+    if (m && m.last > 0) activeTick(state.active, m.digits[m.digits.length - 1], m.last);
+  }
+}
+function stakeFor(cfg) {
+  return cfg.martingale ? round2(cfg.stake * Math.pow(cfg.multiplier, state.step)) : round2(cfg.stake);
+}
+/*
+ * Martingale: a win resets to the base stake; a loss multiplies the stake,
+ * up to the max steps, then restarts. The step is rebuilt from the results
+ * (tick-based first, replaced by Deriv's confirmed result), so it is always right.
+ */
+function nextStep(step, won, c) {
+  return won || !c || !c.martingale || step >= c.maxSteps ? 0 : step + 1;
+}
+function outcomeOf(t) {
+  return t.serverWon !== undefined ? t.serverWon : t.localWon;
+}
+function known(t) {
+  const w = outcomeOf(t);
+  return w !== null && w !== undefined;
+}
+function recomputeStep() {
+  const c = getConfig();
+  let step = state.stepBase;
+  state.tradeLog.forEach((t) => { if (known(t)) step = nextStep(step, outcomeOf(t), c); });
+  state.step = step;
+}
+function logTrade(t) {
+  state.tradeLog.push(t);
+  if (state.tradeLog.length > 200) {
+    const old = state.tradeLog.shift();
+    if (known(old)) state.stepBase = nextStep(state.stepBase, outcomeOf(old), getConfig());
+  }
+}
+function restartMartingale() {
+  state.tradeLog = state.tradeLog.filter((t) => !known(t));
+  state.stepBase = 0;
+  recomputeStep();
+}
+
+function checkLimits() {
+  const cfg = getConfig();
+  if (!cfg) return false;
+  const t = tentative();
+  const profit = round2(state.profit + t.pnl);
+  const wins = state.wins + t.wins;
+  if (cfg.targetWins > 0 && wins >= cfg.targetWins) { stopBot(`Win target reached (${wins} wins). Bot stopped.`, "success"); return true; }
+  if (profit >= cfg.takeProfit) { stopBot(`Take profit reached (${money(profit)}). Bot stopped.`, "success"); return true; }
+  if (profit <= -cfg.stopLoss) { stopBot(`Stop loss reached (${money(profit)}). Bot stopped.`, "error"); return true; }
+  return false;
+}
+
+/* Over 1 wins when the deciding digit is 2-9. */
+function resolveLocal(sym, digit, epoch) {
+  if (!Number.isFinite(epoch)) return false;
+  let changed = false;
+  state.unresolved.slice().forEach((t) => {
+    if (t.symbol !== sym) return;
+    const ready = Number.isFinite(t.startTime) ? epoch > t.startTime : epoch > t.placedEpoch;
+    if (!ready) return;
+    state.unresolved = state.unresolved.filter((x) => x !== t);
+    t.resolvedEpoch = epoch;
+    t.localWon = digit > 1;
+    const ratio = Number.isFinite(t.potential) ? t.potential / t.stake : state.payoutRatio;
+    t.est = t.localWon ? round2(t.stake * ratio) : -t.stake;
+    changed = true;
+  });
+  if (changed) recomputeStep();
+  return changed;
+}
+
+function activeTick(sym, digit, epoch) {
+  if (Number.isFinite(epoch) && epoch <= state.lastTradedEpoch) return;   // one buy per tick
+  if (!state.tradingReady) { showMessage("Account session reconnecting… trading resumes automatically.", "error"); return; }
+  const cfg = getConfig();
+  let stake = stakeFor(cfg);
+  const bal = displayBalance();
+  if (bal !== null && stake > bal) {
+    if (state.step > 0) { restartMartingale(); stake = stakeFor(cfg); }
+    if (stake > bal) { showMessage(`Balance ${money(bal)} is below the stake. Waiting…`, "error"); return; }
+  }
+  if (!placeTrade(stake, sym, epoch)) return;
+  state.lastTradedEpoch = epoch;
+  showMessage(`${NAME[sym]} · tick ${digit} · Over 1 for ${money(stake)}${state.step ? ` (martingale step ${state.step})` : ""}.`);
+}
+
+function sendTo(socket, payload) {
+  if (!socket || socket.readyState !== WebSocket.OPEN) return false;
+  socket.send(JSON.stringify(payload));
+  return true;
+}
+function placeTrade(stake, sym, epoch) {
+  if (!state.running) return false;   // never buy after a stop
+  state.reqSeq += 1;
+  const reqId = 100000 + state.reqSeq;
+  const trade = { reqId, stake, symbol: sym, localWon: null, placedEpoch: epoch, startTime: NaN, settled: false };
+  const sent = sendTo(state.tradeSocket, {
+    buy: 1, price: stake,
+    parameters: {
+      amount: stake, basis: "stake", contract_type: "DIGITOVER", barrier: "1",
+      currency: state.currency, duration: 1, duration_unit: "t", underlying_symbol: sym
+    },
+    req_id: reqId
+  });
+  if (!sent) { showMessage("Account session is not open. Reconnecting…", "error"); return false; }
+  state.pendingByReq.set(reqId, trade);
+  state.unresolved.push(trade);
+  logTrade(trade);
+  updateBalance();
+  return true;
+}
+function settleTrade(trade, poc) {
+  let pnl = Number(poc.profit);
+  if (!Number.isFinite(pnl)) pnl = Number(poc.sell_price || 0) - Number(poc.buy_price || trade.stake);
+  pnl = round2(pnl);
+  const won = poc.status ? poc.status === "won" : pnl > 0;
+  state.byContract.delete(trade.contractId);
+  state.profit = round2(state.profit + pnl);
+  trade.serverWon = won;
+  recomputeStep();
+  if (won) state.wins += 1;
+  state.history.push({ time: new Date().toLocaleTimeString(), symbol: trade.symbol, stake: trade.stake, result: won ? "WIN" : "LOSS", pnl });
+  if (state.history.length > 300) state.history.shift();
+  updateStats();
+  updateBalance();
+  const row = state.history[state.history.length - 1];
+  ui(() => addHistoryRow(row));
+  if (state.running) checkLimits();
+}
+
+/* ---------- ticks ---------- */
+function handleTick(tick) {
+  const sym = tick.symbol;
+  if (!sym || !state.selected.includes(sym)) return;
+  if (state.running && state.active && sym !== state.active) return;   // not the traded market
+  const epoch = Number(tick.epoch);
+  const m = mkOf(sym);
+  if (Number.isFinite(epoch)) {
+    if (epoch <= m.last) return;
+    m.last = epoch;
+  }
+  const digit = digitOf(tick.quote, tick.pip_size);
+  if (digit === null) return;
+
+  if (m.hist) addDigit(m, digit);
+  if (!m.hist || m.refreshing) m.pending.push({ d: digit, epoch });
+
+  const changed = resolveLocal(sym, digit, epoch);
+
+  if (state.running && !checkLimits()) {
+    if (!state.active) chooseMarket();
+    if (state.active === sym) activeTick(sym, digit, epoch);
+  }
+  if (changed) { updateStats(); updateBalance(); }
+
+  if (sym === state.active) state.lastTickAt = Date.now();
+  if (!state.active || sym === state.active) $("lastDigit").textContent = `${digit}`;
+  if (!state.active || sym === state.active) $("lastDigitType").textContent = NAME[sym];
+  scheduleRender();
+}
+
+function handleHistory(data) {
+  const sym = state.histReq.get(data.req_id);
+  if (!sym) return;
+  state.histReq.delete(data.req_id);
+  const m = mkOf(sym);
+  const prices = data.history?.prices || [];
+  const times = data.history?.times || [];
+  m.digits = [];
+  m.counts = Array(10).fill(0);
+  prices.forEach((p) => {
+    const d = digitOf(p, data.pip_size);
+    if (d !== null) { m.digits.push(d); m.counts[d] += 1; }
+  });
+  const n = analysisN();
+  while (m.digits.length > n) m.counts[m.digits.shift()] -= 1;
+  const lastT = Number(times[times.length - 1]) || 0;
+  m.last = Math.max(m.last, lastT);
+  m.pending.forEach((t) => { if (t.epoch > lastT) addDigit(m, t.d); });
+  m.pending = [];
+  m.hist = true;
+  m.refreshing = false;
+  if (state.running && !state.active) chooseMarket();
+  scheduleRender();
+}
+
+function subscribeTicks(socket) {
+  if (!socket || socket.readyState !== WebSocket.OPEN) return;
+  sendTo(socket, { forget_all: "ticks" });
+  const list = state.running && state.active ? [state.active] : state.selected;
+  list.forEach((s, i) => sendTo(socket, { ticks: s, subscribe: 1, req_id: 4000 + i }));
+}
+function subscribeOnly(sym) {
+  [state.pub, state.tradeSocket].forEach((socket) => {
+    if (!socket || socket.readyState !== WebSocket.OPEN) return;
+    sendTo(socket, { forget_all: "ticks" });
+    sendTo(socket, { ticks: sym, subscribe: 1, req_id: 4100 });
+  });
+}
+function requestMissingHistory() {
+  if (!state.pub || state.pub.readyState !== WebSocket.OPEN) return;
+  state.selected.forEach((s) => {
+    const m = mkOf(s);
+    if (m.asked || (m.hist && !m.refreshing)) return;
+    m.asked = true;
+    m.pending = [];
+    state.reqSeq += 1;
+    const id = 500000 + state.reqSeq;
+    state.histReq.set(id, s);
+    sendTo(state.pub, { ticks_history: s, end: "latest", count: analysisN(), style: "ticks", subscribe: 0, req_id: id });
+  });
+}
+function syncMarkets() {
+  subscribeTicks(state.pub);
+  subscribeTicks(state.tradeSocket);
+  requestMissingHistory();
+}
+
+/* ---------- public feed (ticks + history, no login) ---------- */
+function connectPublic() {
+  clearTimeout(pubTimer);
+  const socket = new WebSocket(WS_PUBLIC);
+  state.pub = socket;
+  socket.addEventListener("open", () => {
+    if (state.pub !== socket) return;
+    pubRetry = 0;
+    setStatus(true);
+    Object.values(state.mk).forEach((m) => { m.asked = false; if (m.hist) m.refreshing = true; });
+    syncMarkets();
+  });
+  socket.addEventListener("message", (ev) => {
+    if (state.pub !== socket) return;
+    let d;
+    try { d = JSON.parse(ev.data); } catch (_) { return; }
+    if (d.error) {
+      const sym = state.histReq.get(d.req_id);
+      if (sym) {
+        state.histReq.delete(d.req_id);
+        const m = mkOf(sym);
+        m.hist = true;
+        m.pending.forEach((t) => addDigit(m, t.d));
+        m.pending = [];
+      } else {
+        showMessage(d.error.message || "Market feed error.", "error");
+      }
+      return;
+    }
+    if (d.msg_type === "tick" && d.tick) handleTick(d.tick);
+    else if (d.msg_type === "history") handleHistory(d);
+  });
+  socket.addEventListener("close", () => {
+    if (state.pub !== socket) return;
+    state.pub = null;
+    setStatus(false);
+    pubRetry += 1;
+    pubTimer = setTimeout(connectPublic, Math.min(3000, 1000 * pubRetry));
+  });
+}
+
+/* ---------- account + trading session ---------- */
+const authHeaders = () => ({ Authorization: "Bearer " + state.token, "Deriv-App-ID": state.appId });
+async function restFetch(path, options = {}) {
+  let res;
+  try {
+    res = await fetch(REST_BASE + path, { ...options, headers: authHeaders() });
+  } catch (_) {
+    throw new Error("Could not reach Deriv's account API. Check your connection. If it keeps failing, the browser may be blocking the request.");
+  }
+  let body = null;
+  try { body = await res.json(); } catch (_) { /* ignore */ }
+  if (!res.ok) {
+    const msg = body?.errors?.[0]?.message || body?.error?.message || body?.message || "";
+    throw new Error(`${res.status === 401 || res.status === 403 ? "Token or App ID rejected" : "Request failed"} (${res.status}). ${msg}`.trim());
+  }
+  return body;
+}
+function selectedAccount() {
+  return state.accounts.find((a) => a.account_id === $("account").value) || null;
+}
+function populateAccounts() {
+  const sel = $("account");
+  sel.replaceChildren();
+  state.accounts.forEach((a) => {
+    const o = document.createElement("option");
+    o.value = a.account_id;
+    o.textContent = `${a.account_type.toUpperCase()} · ${a.account_id} · ${money(a.balance, a.currency)}`;
+    sel.appendChild(o);
+  });
+  const demo = state.accounts.find((a) => a.account_type === "demo");
+  sel.value = (demo || state.accounts[0]).account_id;
+}
+function closeTradeSocket(keep = false) {
+  const old = state.tradeSocket;
+  state.tradeSocket = null;
+  state.tradingReady = false;
+  state.unresolved = [];
+  state.pendingByReq.clear();
+  if (!keep) state.byContract.clear();
+  if (old) { try { old.close(); } catch (_) { /* ignore */ } }
+  refreshButtons();
+}
+function scheduleReconnect() {
+  if (!state.token) return;
+  clearTimeout(state.reconnectTimer);
+  state.reconnectCount += 1;
+  state.reconnectTimer = setTimeout(async () => {
+    if (state.tradeSocket || state.connecting) return;
+    try { await connectTrading({ auto: true }); }
+    catch (e) { showMessage((e.message || "Reconnect failed.") + " Retrying…", "error"); scheduleReconnect(); }
+  }, Math.min(1000 * state.reconnectCount, 5000));
+}
+
+function handleTradeMessage(d) {
+  if (d.msg_type === "tick" && d.tick) { handleTick(d.tick); return; }
+  if (d.msg_type === "balance" && d.balance) {
+    const v = Number(d.balance.balance);
+    if (Number.isFinite(v)) state.balance = v;
+    if (d.balance.currency) state.currency = d.balance.currency;
+    updateBalance();
+    return;
+  }
+  if (d.error) {
+    const text = d.error.message || "The trading API returned an error.";
+    const trade = state.pendingByReq.get(d.req_id ?? d.echo_req?.req_id);
+    if (trade) {
+      state.pendingByReq.delete(trade.reqId);
+      state.unresolved = state.unresolved.filter((t) => t !== trade);
+      state.tradeLog = state.tradeLog.filter((t) => t !== trade);
+      if (/balance|insufficient|stake|maximum/i.test(text)) restartMartingale(); else recomputeStep();
+      showMessage("Trade rejected: " + text + " The bot keeps running" + (/balance|insufficient|stake|maximum/i.test(text) ? " from the base stake." : "."), "error");
+      return;
+    }
+    showMessage(text, "error");
+    return;
+  }
+  if (d.msg_type === "buy" && d.buy) {
+    const trade = state.pendingByReq.get(d.req_id);
+    if (!trade) return;
+    state.pendingByReq.delete(d.req_id);
+    trade.contractId = d.buy.contract_id;
+    const payout = Number(d.buy.payout);
+    const paid = Number(d.buy.buy_price);
+    const base = Number.isFinite(paid) && paid > 0 ? paid : trade.stake;
+    if (Number.isFinite(payout) && payout > base) {
+      trade.potential = round2(payout - base);
+      state.payoutRatio = (payout - base) / base;
+    }
+    trade.startTime = Number(d.buy.start_time ?? d.buy.purchase_time);
+    if (trade.localWon !== null && Number.isFinite(trade.startTime) && trade.resolvedEpoch <= trade.startTime) {
+      trade.localWon = null; trade.est = undefined; trade.resolvedEpoch = undefined;
+      state.unresolved.push(trade);
+      recomputeStep();
+    }
+    state.byContract.set(trade.contractId, trade);
+    state.trades += 1;
+    const after = Number(d.buy.balance_after);
+    if (Number.isFinite(after)) { state.balance = after; updateBalance(); }
+    updateStats();
+    sendTo(state.tradeSocket, { proposal_open_contract: 1, contract_id: trade.contractId, subscribe: 1 });
+    return;
+  }
+  if (d.msg_type === "proposal_open_contract" && d.proposal_open_contract) {
+    const poc = d.proposal_open_contract;
+    const trade = state.byContract.get(poc.contract_id);
+    if (!trade || trade.settled) return;
+    if (!(poc.is_sold === 1 || poc.status === "won" || poc.status === "lost")) return;
+    trade.settled = true;
+    if (d.subscription?.id) sendTo(state.tradeSocket, { forget: d.subscription.id });
+    settleTrade(trade, poc);
+  }
+}
+
+async function connectTrading(options = {}) {
+  const auto = Boolean(options.auto);
+  state.connecting = true;
+  try {
+    closeTradeSocket(auto);
+    const account = auto && state.account ? state.account : selectedAccount();
+    if (!account) throw new Error("Pick an account first.");
+    state.account = account;
+    state.currency = account.currency;
+    if (!auto || state.balance === null) state.balance = Number(account.balance);
+    updateBalance();
+    updateStats();
+    showMessage(auto ? "Reconnecting the account session… the bot keeps running."
+      : `Opening a session for ${account.account_type.toUpperCase()} account ${account.account_id}…`);
+    const body = await restFetch(`/trading/v1/options/accounts/${encodeURIComponent(account.account_id)}/otp`, { method: "POST" });
+    const url = body?.data?.url;
+    if (!url) throw new Error("Deriv did not return a session URL.");
+    const socket = new WebSocket(url);
+    state.tradeSocket = socket;
+    socket.addEventListener("open", () => {
+      if (state.tradeSocket !== socket) return;
+      state.tradingReady = true;
+      state.reconnectCount = 0;
+      refreshButtons();
+      sendTo(socket, { balance: 1, subscribe: 1, req_id: 3001 });
+      subscribeTicks(socket);
+      state.byContract.forEach((t) => {
+        if (!t.settled) sendTo(socket, { proposal_open_contract: 1, contract_id: t.contractId, subscribe: 1 });
+      });
+      const kinds = state.accounts.map((a) => a.account_type.toUpperCase()).join(", ");
+      showMessage(state.running ? "Account session restored. The bot is trading."
+        : `Connected to ${account.account_type.toUpperCase()} account ${account.account_id}. Balance: ${money(state.balance)}. Accounts found: ${kinds}. Press Start Bot.`, "success");
+    });
+    socket.addEventListener("message", (ev) => {
+      if (state.tradeSocket !== socket) return;
+      let d;
+      try { d = JSON.parse(ev.data); } catch (_) { return; }
+      handleTradeMessage(d);
+    });
+    socket.addEventListener("error", () => { if (state.tradeSocket === socket) showMessage("Account session error.", "error"); });
+    socket.addEventListener("close", () => {
+      if (state.tradeSocket !== socket) return;
+      state.tradeSocket = null;
+      state.tradingReady = false;
+      state.pendingByReq.clear();
+      state.unresolved = [];
+      refreshButtons();
+      showMessage("Account session dropped. Reconnecting…" + (state.running ? " The bot keeps running." : ""), "error");
+      scheduleReconnect();
+    });
+  } finally {
+    state.connecting = false;
+  }
+}
+
+async function connectAccount() {
+  const token = $("apiToken").value.trim();
+  const appId = $("appId").value.trim();
+  if (!token || !appId) { showMessage("Paste both your API token and your App ID.", "error"); return; }
+  if (state.running) { showMessage("Stop the bot first, then reconnect the account.", "error"); return; }
+  state.token = token;
+  state.appId = appId;
+  $("connectBtn").disabled = true;
+  showMessage("Fetching your accounts…");
+  try {
+    const body = await restFetch("/trading/v1/options/accounts");
+    const list = (body?.data || []).filter((a) => a.status !== "inactive");
+    if (!list.length) throw new Error("No active Options accounts found for this token.");
+    state.accounts = list;
+    populateAccounts();
+    await connectTrading();
+  } catch (err) {
+    closeTradeSocket();
+    showMessage(err.message || "Could not connect the account.", "error");
+  } finally {
+    $("connectBtn").disabled = false;
+  }
+}
+
+/* ---------- events + init ---------- */
+$("connectBtn").addEventListener("click", connectAccount);
+$("startBtn").addEventListener("click", startBot);
+$("stopBtn").addEventListener("click", () => stopBot("Bot stopped manually."));
+$("clearHistoryBtn").addEventListener("click", () => { state.history = []; renderHistory(); });
+$("account").addEventListener("change", async () => {
+  if (!state.token || !state.accounts.length) return;
+  if (state.running) {
+    if (state.account) $("account").value = state.account.account_id;
+    showMessage("Stop the bot first, then switch accounts.", "error");
+    return;
+  }
+  state.realArmedUntil = 0;
+  try { await connectTrading(); }
+  catch (e) { closeTradeSocket(); showMessage(e.message || "Could not switch account.", "error"); }
+});
+$("analysisTicks").addEventListener("change", () => {
+  Object.values(state.mk).forEach((m) => { m.hist = false; m.asked = false; });
+  requestMissingHistory();
+  scheduleRender();
+});
+setInterval(() => {
+  if (!state.running || !state.active || !state.tradingReady) return;
+  if (Date.now() - (state.lastTickAt || Date.now()) > 7000) {
+    state.lastTickAt = Date.now();
+    subscribeOnly(state.active);
+    showMessage("No ticks for 7 seconds. Re-subscribing to the market…", "error");
+  }
+}, 2000);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && state.running) requestWakeLock();
+});
+
+const chips = $("marketList");
+MARKETS.forEach(([sym, label]) => {
+  const wrap = document.createElement("label");
+  wrap.className = "chip";
+  const box = document.createElement("input");
+  box.type = "checkbox";
+  box.value = sym;
+  box.checked = true;
+  box.addEventListener("change", () => {
+    state.selected = MARKETS.map((m) => m[0]).filter((s) => {
+      const el = chips.querySelector(`input[value="${s}"]`);
+      return el && el.checked;
+    });
+    if (state.active && !state.selected.includes(state.active)) {
+      state.active = null;
+      if (state.running) chooseMarket();
+    }
+    syncMarkets();
+    refreshButtons();
+    scheduleRender();
+  });
+  const text = document.createElement("span");
+  text.textContent = label;
+  wrap.append(box, text);
+  chips.appendChild(wrap);
+});
+
+updateBalance();
+updateStats();
+renderHistory();
+renderScanner();
+refreshButtons();
+showMessage("Paste your API token and App ID, then press Connect Account. The scanner runs without logging in.");
+connectPublic();
+
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
