@@ -666,7 +666,7 @@ footer p {
           <button id="startBtn" class="btn primary" type="button" disabled>Start Bot</button>
           <button id="stopBtn" class="btn warning" type="button" disabled>Stop Bot</button>
         </div>
-        <p class="small">The bot picks the market with the highest chance of Over 1 (digits 2-9) and buys Over 1 on every tick of it, with no tick skipped, until you stop it or a limit is reached. Martingale can rapidly increase risk. Test on a demo account first.</p>
+        <p class="small">The bot only considers markets where digits 0 and 1 are both below 10%, picks the one with the highest chance of Over 1 (digits 2-9) and buys Over 1 on every tick of it, with no tick skipped, until you stop it or a limit is reached. Martingale can rapidly increase risk. Test on a demo account first.</p>
       </section>
 
       <section class="panel">
@@ -686,7 +686,7 @@ footer p {
 /*
  * DERIV OVER 1 BOT - multi-market scanner
  *
- * Scans the selected markets (last-digit % over the last N ticks), picks the
+ * A market only counts when digits 0 and 1 are BOTH below 10%. Scans the selected markets (last-digit % over the last N ticks), picks the
  * one with the HIGHEST chance of Over 1 (digits 2-9), then buys Over 1 on
  * EVERY tick of that market. No tick is skipped. Stops only on your Stop,
  * take profit, stop loss or win target.
@@ -803,7 +803,13 @@ function evaluate(sym) {
   }
   const pct = m.counts.map((c) => (c / total) * 100);
   const win = pct[2] + pct[3] + pct[4] + pct[5] + pct[6] + pct[7] + pct[8] + pct[9];
-  return { ok: true, total, win, pct, reason: `Over 1 chance: ${win.toFixed(1)}% (digits 2-9)` };
+  const cond = pct[0] < 10 && pct[1] < 10;   // digits 0 and 1 must both be below 10%
+  return {
+    ok: true, cond, total, win, pct,
+    reason: cond
+      ? `Over 1 chance: ${win.toFixed(1)}% (digits 2-9) · digit 0: ${pct[0].toFixed(1)}% · digit 1: ${pct[1].toFixed(1)}%`
+      : `Digits 0 and 1 must both be below 10% (0: ${pct[0].toFixed(1)}%, 1: ${pct[1].toFixed(1)}%)`
+  };
 }
 
 function chooseMarket() {
@@ -811,7 +817,7 @@ function chooseMarket() {
   let bestWin = -1;
   state.selected.forEach((sym) => {
     const e = evaluate(sym);
-    if (e.ok && e.win > bestWin) { best = sym; bestWin = e.win; }
+    if (e.ok && e.cond && e.win > bestWin) { best = sym; bestWin = e.win; }
   });
   const min = minChance();
   if (best && bestWin >= min) {
@@ -825,7 +831,9 @@ function chooseMarket() {
     state.phase = "scan";
     showMessage(best
       ? `Best is ${NAME[best]} at ${bestWin.toFixed(1)}%. Waiting for a market at ${min}% or more…`
-      : `Scanning ${state.selected.length} market(s)… collecting ticks.`);
+      : state.selected.some((sym) => evaluate(sym).ok)
+        ? "No market has digits 0 and 1 both below 10% yet. Scanning…"
+        : `Scanning ${state.selected.length} market(s)… collecting ticks.`);
   }
   scheduleRender();
 }
@@ -849,7 +857,7 @@ function renderScanner() {
     name.textContent = NAME[s] + (e.pct ? ` · Over 1 ${e.win.toFixed(1)}%` : "");
     const badge = document.createElement("b");
     badge.className = "badge " + (s === state.active ? "ok" : "no");
-    badge.textContent = s === state.active ? "ACTIVE" : e.ok ? (e.win >= minChance() ? "READY" : "LOW") : "…";
+    badge.textContent = s === state.active ? "ACTIVE" : e.ok ? (!e.cond ? "NO" : e.win >= minChance() ? "READY" : "LOW") : "…";
     row.append(name, badge);
     row.title = e.reason;
     box.appendChild(row);
